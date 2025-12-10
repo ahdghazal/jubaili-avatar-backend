@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jubaili AI Advisor</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -27,11 +28,21 @@
             margin-bottom: 25px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-        #avatar-frame {
+        #streaming-container {
             width: 100%;
             height: 600px;
-            border: none;
             border-radius: 10px;
+            overflow: hidden;
+            background: #eaeaea;
+            position: relative;
+        }
+        #loading-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #444;
         }
         .btn {
             padding: 10px 15px;
@@ -57,6 +68,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -66,11 +78,10 @@
     <!-- HeyGen Avatar -->
     <div class="section">
         <h2>👨‍🌾 Virtual Farming Consultant</h2>
-        <iframe id="avatar-frame"
-                src="https://labs.heygen.com/interactive-avatar/share?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiJBbnRob255X0NoYWlyX1NpdHRpbmdfcHVi%0D%0AbGljIiwicHJldmlld0ltZyI6Imh0dHBzOi8vZmlsZXMyLmhleWdlbi5haS9hdmF0YXIvdjMvM2Rj%0D%0AMzQ0OWJmYWFmNDEwOWFkYjhlYTNlYWFkMDYwNTNfNTUzMjAvcHJldmlld190YXJnZXQud2VicCIs%0D%0AIm5lZWRSZW1vdmVCYWNrZ3JvdW5kIjpmYWxzZSwia25vd2xlZGdlQmFzZUlkIjoiYjY0ZDBiYjk0%0D%0AZWViNDZmOTlmNWY2NDA5YTY0ZWNiNzEiLCJ1c2VybmFtZSI6IjY4MDdhOWIyMjE5YTRjN2I4ZmE1%0D%0AYzI1NDQ2NDYxMjllIn0%3D"
-                allow="camera *; microphone *; autoplay *"
-                allowfullscreen>
-        </iframe>
+
+        <div id="streaming-container">
+            <div id="loading-state">Loading AI Assistant...</div>
+        </div>
     </div>
 
     <!-- Image Diagnosis -->
@@ -133,12 +144,47 @@
         const message = `The farmer's crop diagnosis shows: ${diseaseName}.
         Please explain what this disease is and which Jubaili Agrotec products should be used.`;
 
-        // This sends text to the avatar iframe (HeyGen Web Messaging API)
-        const iframe = document.getElementById("avatar-frame");
-        iframe.contentWindow.postMessage({ text: message }, "*");
+        // Send text message to HeyGen streaming embed
+        window.postMessage({ type: "heygen-message", text: message }, "*");
 
         alert("Sent to avatar! The advisor will now speak the explanation.");
     }
+</script>
+
+<script>
+
+(function() {
+    const host = "https://labs.heygen.com";
+
+    const share = "eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiJBbnRob255X0NoYWlyX1NpdHRpbmdfcHVi%0D%0AbGljIiwicHJldmlld0ltZyI6Imh0dHBzOi8vZmlsZXMyLmhleWdlbi5haS9hdmF0YXIvdjMvM2Rj%0D%0AMzQ0OWJmYWFmNDEwOWFkYjhlYTNlYWFkMDYwNTNfNTUzMjAvcHJldmlld190YXJnZXQud2VicCIs%0D%0AIm5lZWRSZW1vdmVCYWNrZ3JvdW5kIjpmYWxzZSwia25vd2xlZGdlQmFzZUlkIjoiYjY0ZDBiYjk0%0D%0AZWViNDZmOTlmNWY2NDA5YTY0ZWNiNzEiLCJ1c2VybmFtZSI6IjY4MDdhOWIyMjE5YTRjN2I4ZmE1%0D%0AYzI1NDQ2NDYxMjllIn0%3D";
+
+    const url = host + "/guest/streaming-embed?share=" + share + "&inIFrame=1&autoplay=1";
+
+    const container = document.getElementById('streaming-container');
+    const loadingState = document.getElementById('loading-state');
+
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.allow = "microphone; camera";
+    iframe.title = "AI Assistant";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "0";
+
+    iframe.onload = function() {
+        setTimeout(() => {
+            if (loadingState) loadingState.style.display = "none";
+        }, 800);
+    };
+
+    container.appendChild(iframe);
+
+    window.addEventListener("message", (e) => {
+        if (e.origin === host && e.data?.type === "streaming-embed") {
+            console.log("HeyGen message:", e.data);
+        }
+    });
+})();
 </script>
 
 </body>
