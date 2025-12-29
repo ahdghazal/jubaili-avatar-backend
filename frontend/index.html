@@ -3,68 +3,130 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Jubaili AI Advisor</title>
 
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --green-dark: #0b3d2e;
+            --green-main: #1f6f4a;
+            --green-soft: #e9f5ef;
+            --brown-dark: #3a2f25;
+            --grey-bg: #f4f5f6;
+            --grey-card: #ffffff;
+            --grey-text: #5f6b66;
+            --shadow-soft: 0 12px 30px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            background: #f3f3f3;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #f6f7f6 0%, #eef1ef 100%);
+            color: var(--brown-dark);
         }
+
         .container {
-            width: 90%;
-            max-width: 900px;
+            width: 92%;
+            max-width: 1100px;
             margin: auto;
-            padding-top: 20px;
+            padding: 40px 0 80px;
         }
-        h1 {
+
+        /* Header */
+        .header {
             text-align: center;
-            color: #0a4d24;
+            margin-bottom: 50px;
         }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            color: var(--green-dark);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--grey-text);
+            max-width: 640px;
+            margin: auto;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Card Sections */
         .section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background: var(--grey-card);
+            padding: 28px;
+            border-radius: 18px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-soft);
         }
+
+        .section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 18px;
+            color: var(--green-main);
+            font-weight: 600;
+        }
+
+        /* Avatar */
         #streaming-container {
             width: 100%;
-            height: 600px;
-            border-radius: 10px;
+            height: min(65vh, 620px);
+            border-radius: 16px;
             overflow: hidden;
-            background: #eaeaea;
+            background: #dfe6e2;
             position: relative;
         }
+
         #loading-state {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 18px;
-            color: #444;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--grey-text);
+            background: linear-gradient(135deg, #e8efe9, #f6f7f6);
         }
+
+        /* Buttons */
         .btn {
-            padding: 10px 15px;
-            background: #0a4d24;
-            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 22px;
+            background: linear-gradient(135deg, var(--green-main), var(--green-dark));
+            color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 10px;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 16px rgba(31,111,74,0.25);
         }
+
         .btn:hover {
-            background: #0c6e31;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(31,111,74,0.35);
         }
-        input[type="file"] {
-            margin-top: 10px;
-        }
-        #diagnosis-result {
-            margin-top: 15px;
-            padding: 15px;
-            background: #eefbe9;
-            border-left: 5px solid #0a4d24;
-            display: none;
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .section {
+                padding: 20px;
+            }
+            #streaming-container {
+                height: 420px;
+            }
         }
     </style>
 </head>
@@ -73,86 +135,31 @@
 
 <div class="container">
 
-    <h1>🌱 Jubaili Agrotec – AI Farming Advisor</h1>
-
-    <!-- HeyGen Avatar -->
-    <div class="section">
-        <h2>👨‍🌾 Virtual Farming Consultant</h2>
-
-        <div id="streaming-container">
-            <div id="loading-state">Loading AI Assistant...</div>
-        </div>
+    <!-- Header -->
+    <div class="header">
+        <h1>AI Farming Advisor</h1>
+        <p>
+            An intelligent virtual consultant designed to assist farmers with crop health,
+            diagnostics, and best-practice recommendations through natural conversation.
+        </p>
     </div>
 
-    <!-- Image Diagnosis -->
+    <!-- Avatar Section -->
     <div class="section">
-        <h2>📸 Diagnose Crop Disease</h2>
+        <h2>Virtual Agricultural Consultant</h2>
 
-        <input type="file" id="image-input" accept="image/*">
-        <button class="btn" onclick="sendImage()">Analyze Image</button>
-
-        <div id="diagnosis-result"></div>
+        <div id="streaming-container">
+            <div id="loading-state">Initializing AI Consultant…</div>
+        </div>
     </div>
 
 </div>
 
 <script>
     const BACKEND_URL = "https://jubaili-avatar-backend.onrender.com";
-
-    async function sendImage() {
-        const fileInput = document.getElementById("image-input");
-        const resultBox = document.getElementById("diagnosis-result");
-
-        if (!fileInput.files.length) {
-            alert("Please choose an image.");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
-
-        resultBox.style.display = "block";
-        resultBox.innerHTML = "<strong>Analyzing image… please wait ⏳</strong>";
-
-        try {
-            const response = await fetch(`${BACKEND_URL}/diagnose-simple`, {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                resultBox.innerHTML = "<strong>Error:</strong> " + data.error;
-                return;
-            }
-
-            resultBox.innerHTML = `
-                <strong>Disease:</strong> ${data.disease_name}<br>
-                <strong>Confidence:</strong> ${(data.probability * 100).toFixed(2)}%<br>
-                <br>
-                <button class="btn" onclick="sendToAvatar('${data.disease_name}')">
-                    Explain Treatment in Avatar
-                </button>
-            `;
-        } catch (err) {
-            resultBox.innerHTML = "❌ Failed to analyze image.";
-        }
-    }
-
-    function sendToAvatar(diseaseName) {
-        const message = `The farmer's crop diagnosis shows: ${diseaseName}.
-        Please explain what this disease is and which Jubaili Agrotec products should be used.`;
-
-        // Send text message to HeyGen streaming embed
-        window.postMessage({ type: "heygen-message", text: message }, "*");
-
-        alert("Sent to avatar! The advisor will now speak the explanation.");
-    }
 </script>
 
 <script>
-
 (function() {
     const host = "https://labs.heygen.com";
 
@@ -174,16 +181,10 @@
     iframe.onload = function() {
         setTimeout(() => {
             if (loadingState) loadingState.style.display = "none";
-        }, 800);
+        }, 900);
     };
 
     container.appendChild(iframe);
-
-    window.addEventListener("message", (e) => {
-        if (e.origin === host && e.data?.type === "streaming-embed") {
-            console.log("HeyGen message:", e.data);
-        }
-    });
 })();
 </script>
 
